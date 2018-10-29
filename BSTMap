@@ -1,0 +1,176 @@
+package com.data_structure.map;
+
+/**
+ *  用途：可以用于词频统计
+ * @param <K>
+ * @param <V>
+ */
+public class BSTMap<K extends Comparable,V> implements Map<K,V> {
+    private class Node{
+        private K key;
+        private V value;
+
+        private Node left,right;
+
+        public Node(K key,V value,Node left,Node right){
+            this.key = key;
+            this.value = value;
+            this.left = left;
+            this.right = right;
+        }
+
+        public Node(K key,V value){
+            this(key,value,null,null);
+        }
+
+        @Override
+        public String toString(){
+            return key + ":" + value;
+        }
+
+    }
+    private Node root;
+    private int size;
+    public BSTMap(){
+        root = null;
+        size = 0;
+    }
+    @Override
+    public int getSize() {
+        return size;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return size == 0;
+    }
+
+    @Override
+    public boolean contains(K key) {
+        return getNode(root,key) != null;
+    }
+
+    @Override
+    public void add(K key, V value) {
+
+        if (root == null){
+            size ++;
+            root = new Node(key,value);
+        }
+        root = add(root,key,value);
+        
+    }
+    
+//    向以node为根节点的二叉树中添加key，和value，并返回添加之后的新的二叉树的根。
+    private Node add(Node node,K key,V value){
+        if (node == null){
+            return new Node(key,value);
+        }
+        
+        if (node.key.compareTo(key) < 0){
+            return add(node.left,key,value);
+        }else if(node.key.compareTo(key) > 0){
+            return add(node.right,key,value);
+        }else{
+            node.value = value;
+        }
+        return node;
+    }
+
+//    返回以node的根节点，key值为key的节点的node
+    private Node getNode(Node node,K key){
+        if (node == null){
+            return null;
+        }
+        if (node.key.compareTo(key) < 0){
+            return getNode(node.left,key);
+        }else if (node.key.compareTo(key) > 0){
+            return getNode(node.right,key);
+        }else{
+            return node;
+        }
+    }
+//删除二分搜索树中值为key的元素
+    @Override
+    public V remove(K key) {
+        Node delNode = getNode(root,key);
+        if (delNode != null){
+            root = remove(root,key);
+            return delNode.value;
+        }
+        return null;
+    }
+
+
+//    删除以node为根节点的二分搜索树中，键值为key的元素，并返回删除了key之后的新的二分搜索树的根
+    private Node remove(Node node,K key){
+        if (node == null){
+            return node;
+        }
+
+        if (node.key.equals(key)){
+            if (node.left == null){
+                Node rightNode = node.right;
+                rightNode.right = null;
+                size --;
+                return rightNode;
+            }else if (node.right == null){
+                Node leftNode = node.left;
+                leftNode.left = null;
+                size --;
+                return leftNode;
+            }else {
+
+                Node successor = minimum(node.right);
+                successor.right = removeMin(node.right);
+                successor.left = node.left;
+                node.left = node.right = null;
+                return successor;
+            }
+        }else if (node.key.compareTo(key) < 0){
+            node = remove(node.left,key);
+            return node;
+        }else {
+            node = remove(node.right,key);
+            return node;
+        }
+    }
+
+//    找到以node为根的二分搜索树中，最小的值所在的节点
+    private Node minimum(Node node){
+        if (node == null){
+            return null;
+        }
+        return minimum(node.left);
+    }
+
+
+//    删除以node为根的二分搜索树中最小的元素所在的节点,并返回删除了最小元素之后新的二分搜索树的根
+    private Node removeMin(Node node){
+        if (node.left == null){
+            Node rightNode = node.right;
+            node.left = null;
+            size --;
+            return rightNode;
+        }
+        node.left = removeMin(node.left);
+        return node;
+    }
+
+    @Override
+    public void set(K key, V newValue) {
+        Node node = getNode(root,key);
+
+        if (node == null){
+            throw new IllegalArgumentException("The key doesn't exist...");
+        }
+        node.value = newValue;
+
+    }
+
+    @Override
+    public V get(K key) {
+        Node node = getNode(root,key);
+        return node == null ? null : node.value;
+    }
+}
